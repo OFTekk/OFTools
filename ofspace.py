@@ -2,6 +2,7 @@
 # coding:utf-8;
 
 from math import *
+import hashlib
 
 
 class Point(object):
@@ -18,9 +19,11 @@ class Point(object):
         if space != 0:
             if isinstance(space, Space):
                 self.space = space
+            else:
+                self.space = 0
         else:
             self.space = 0
-        self.name = 0
+        self.name = self.calculatehash()
 
     def __getitem__(self, key):
         if key == 0 or key == 'x' or key == 'X' or key == 'u' or key == 'U' or key == 'r' or key == 'R':
@@ -45,31 +48,38 @@ class Point(object):
             return
         raise TypeError
 
-    def setX(self, v):
+    def calculatehash(self):
+        m = hashlib.md5()
+        m.update(str(self.x))
+        m.update(str(self.y))
+        m.update(str(self.z))
+        return m.hexdigest()
+
+    def setx(self, v):
         if not isinstance(v, (int, long, float)):
             raise TypeError
         self.x = v
 
-    def setY(self, v):
+    def sety(self, v):
         if not isinstance(v, (int, long, float)):
             raise TypeError
         self.y = v
 
-    def setZ(self, v):
+    def setz(self, v):
         if not isinstance(v, (int, long, float)):
             raise TypeError
         self.z = v
 
-    def getX(self):
+    def getx(self):
         return self.x
 
-    def getY(self):
+    def gety(self):
         return self.y
 
-    def getZ(self):
+    def getz(self):
         return self.z
 
-    def xSide(self, v):
+    def xside(self, v):
         if isinstance(v, Point):
             if self.x < v.x:
                 return -1
@@ -86,7 +96,7 @@ class Point(object):
                 return 1
         raise TypeError
 
-    def ySide(self, v):
+    def yside(self, v):
         if isinstance(v, Point):
             if self.y < v.y:
                 return -1
@@ -103,7 +113,7 @@ class Point(object):
                 return 1
         raise TypeError
 
-    def zSide(self, v):
+    def zside(self, v):
         if isinstance(v, Point):
             if self.z < v.z:
                 return -1
@@ -122,13 +132,13 @@ class Point(object):
 
     def side(self, v):
         if isinstance(v, Point):
-            return [self.xSide(v), self.ySide(v), self.zSide(v)]
+            return [self.xside(v), self.yside(v), self.zside(v)]
         raise TypeError
 
-    def setName(self, n):
+    def setname(self, n):
         self.name = n
 
-    def getName(self):
+    def getname(self):
         return self.name
 
     def __add__(self, v):
