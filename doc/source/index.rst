@@ -6,10 +6,10 @@
 Vítejte v dokumentaci pro OFTools!
 ==================================
 
-Contents:
+Obsah:
 
 .. toctree::
-	:maxdepth: 3
+	:maxdepth: 2
 
 	teorie.rst
 

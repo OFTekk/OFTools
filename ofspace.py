@@ -6,16 +6,19 @@ import hashlib
 
 
 class Point(object):
-    def __init__(self, x=0.0, y=0.0, z=0.0, space=0):
+    def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0, space=0):
         if not isinstance(x, (int, long, float)):
             raise TypeError
         if not isinstance(y, (int, long, float)):
             raise TypeError
         if not isinstance(z, (int, long, float)):
             raise TypeError
+        if not isinstance(w, (int, long, float)):
+            raise TypeError
         self.x = x
         self.y = y
         self.z = z
+        self.w = w
         if space != 0:
             if isinstance(space, Space):
                 self.space = space
@@ -30,8 +33,10 @@ class Point(object):
             return self.x
         if key == 1 or key == 'y' or key == 'Y' or key == 'v' or key == 'V' or key == 'g' or key == 'G':
             return self.y
-        if key == 2 or key == 'z' or key == 'Z' or key == 'w' or key == 'W' or key == 'b' or key == 'B':
+        if key == 2 or key == 'z' or key == 'Z' or key == 's' or key == 'S' or key == 'b' or key == 'B':
             return self.z
+        if key == 3 or key == 'w' or key == 'W' or key == 't' or key == 'T':
+            return self.w
         raise TypeError
 
     def __setitem__(self, key, value):
@@ -43,8 +48,11 @@ class Point(object):
         if key == 1 or key == 'y' or key == 'Y' or key == 'v' or key == 'V' or key == 'g' or key == 'G':
             self.y = value
             return
-        if key == 2 or key == 'z' or key == 'Z' or key == 'w' or key == 'W' or key == 'b' or key == 'B':
+        if key == 2 or key == 'z' or key == 'Z' or key == 's' or key == 'S' or key == 'b' or key == 'B':
             self.z = value
+            return
+        if key == 3 or key == 'w' or key == 'W' or key == 't' or key == 'T':
+            self.w = value
             return
         raise TypeError
 
@@ -53,6 +61,7 @@ class Point(object):
         m.update(str(self.x))
         m.update(str(self.y))
         m.update(str(self.z))
+        m.update(str(self.w))
         return m.hexdigest()
 
     def setx(self, v):
@@ -70,6 +79,11 @@ class Point(object):
             raise TypeError
         self.z = v
 
+    def setw(self, v):
+        if not isinstance(v, (int, long, float)):
+            raise TypeError
+        self.w = v
+
     def getx(self):
         return self.x
 
@@ -78,6 +92,9 @@ class Point(object):
 
     def getz(self):
         return self.z
+
+    def getw(self):
+        return self.w
 
     def xside(self, v):
         if isinstance(v, Point):
@@ -404,9 +421,168 @@ class Rectangle(object):
         return self[0] != r[0] or self[1] != r[1] or self[2] != r[2] or self[3] != r[3]
 
 
+class Matrix(object):
+    def __init__(self, lst=[]):
+        """
+
+        :param lst: list specifying rows as another lists with columns [[...], [...], ...] or Point
+        """
+        self.rows = 0
+        self.cols = 0
+        if not isinstance(lst, list):
+            if isinstance(lst, Point):
+                self.list = [[lst[0], lst[1], lst[2], 1.0]]
+            else:
+                raise TypeError
+        if len(lst) < 1:
+            self.list = [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+        else:
+            if self.checkinputconsistency(lst):
+                self.list = lst
+            else:
+                raise ValueError
+
+    def checkinputconsistency(self, lst):
+        row0len = len(lst[0])
+        for i in range(1, len(lst)):
+            if row0len != len(lst[i]):
+                return False
+            for j in range(0, row0len):
+                if not isinstance(lst[i][j], (int, long, float)):
+                    return False
+        self.rows = len(lst)
+        self.cols = row0len
+        return True
+
+    def isrow(self):
+        if self.rows == 1:
+            return True
+        return False
+
+    def iscolumn(self):
+        if self.cols == 1:
+            return True
+        return False
+
+    def mn(self):
+        """
+
+
+        :return: list of Matrix m x n dimensions in list (m = rows, n = columns)
+        """
+        return [self.rows, self.cols]
+
+    def path(self):
+        """
+
+        So called path P of square matrix A is sum of elements (a) of main diagonal of matrix e.g. :
+        :math:`P(\mathbf{A}) = \sum_{r = 1}^m a_{rr}`.
+        :return:
+        """
+        if self.rows == self.cols:
+            sm = 0.0
+            for i in range(0, self.rows):
+                sm += self.list[i][i]
+            return sm
+        return None
+
+    def __add__(self, m):
+        if isinstance(m, Matrix):
+            if self.rows == m.rows and self.cols == m.cols:
+                sm = []
+                for i in range(0, self.rows):
+                    sm.append([])
+                    for j in range(0, self.cols):
+                        sm[i].append(self.list[i][j] + m.list[i][j])
+                return Matrix(sm)
+            else:
+                raise ValueError
+        if isinstance(m, Point):
+            if self.cols == 4 and self.rows == 1:
+                return Matrix([[self.list[0][0] + m[0],
+                                self.list[0][1] + m[1],
+                                self.list[0][2] + m[2],
+                                1.0]])
+            raise ValueError
+        raise TypeError
+
+    def __sub__(self, m):
+        if isinstance(m, Matrix):
+            if self.rows == m.rows and self.cols == m.cols:
+                sm = []
+                for i in range(0, self.rows):
+                    sm.append([])
+                    for j in range(0, self.cols):
+                        sm[i].append(self.list[i][j] - m.list[i][j])
+                return Matrix(sm)
+            else:
+                raise ValueError
+        if isinstance(m, Point):
+            if self.cols == 4 and self.rows == 1:
+                return Matrix([[self.list[0][0] - m[0],
+                                self.list[0][1] - m[1],
+                                self.list[0][2] - m[2],
+                                1.0]])
+            raise ValueError
+        raise TypeError
+
+    def __mul__(self, m):
+        """
+
+        Multiplication of Matrix with scalar (int, long, float), Vector (Point) or another Matrix.
+        Multiplication of Matrix with Matrix is defined for matrices :math:`\mathbf{A}(m,n), \mathbf{B}(n,p)` as :
+        :math:`c_{i k} = \mathbf{a}_i \mathbf{b}_{k}^{T} = \sum_{j = 1}^n a_{i j} b_{j k}`
+        :param m: is even int, long, float, Point or Matrix
+        :return: :raise TypeError: in case of multiplication with Point is Point else Matrix
+        """
+        if isinstance(m, (int, long, float)):
+            sm = []
+            for i in range(0, self.rows):
+                sm.append([])
+                for j in range(0, self.cols):
+                    sm[i].append(self.list[i][j] * m)
+            return Matrix(sm)
+        if isinstance(m, Matrix):
+            if self.cols == m.rows:
+                sm = []
+                for i in range(0, self.rows):
+                    sm.append([])
+                    for k in range(0, m.rows):
+                        numsm = 0.0
+                        for j in range(0, self.cols):
+                            numsm += self.list[i][j] * m.list[j][k]
+                        sm[i].append(numsm)
+                return Matrix(sm)
+            else:
+                raise ValueError
+        if isinstance(m, Point):
+            return Matrix()
+        raise TypeError
+
+
 class Space(object):
     def __init__(self, origin=Point()):
         if not isinstance(origin, Point):
             raise TypeError
         self.origin = origin
         self.items = []
+
+
+def matrixtranslation(trns=Point()):
+    return Matrix()
+
+def matrixrotation(angle=180.0, axis=0):
+    if isinstance(axis, str):
+        if axis == 'x' or axis == 'X':
+            axis = 0
+        elif axis == 'y' or axis == 'Y':
+            axis = 1
+        elif axis == 'z' or axis == 'Z':
+            axis = 2
+        else:
+            raise ValueError
+    if not isinstance(angle, (int, long, float)) or not isinstance(axis, (int, long)):
+        raise TypeError
+    if axis < 0 or axis > 2:
+        raise ValueError
+    return Matrix()

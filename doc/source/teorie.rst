@@ -1,11 +1,12 @@
 Teorie použitá při vývoji OFTools
 =================================
 
-Contents:
+Obsah:
 
 .. toctree::
-	:maxdepth: 3
+	:maxdepth: 2
 
+	matice.rst
 	primka.rst
 
 
