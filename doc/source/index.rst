@@ -12,6 +12,7 @@ Obsah:
 	:maxdepth: 2
 
 	teorie.rst
+	symbolytabulky.rst
 
 
 Index a tabulky

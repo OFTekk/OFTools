@@ -3,19 +3,19 @@ grammar oftexmath;
 /** The start rule; begin parsing here. */
 init       : main+ ;
 
-main       : mainexpr (allinone | mainexpr)* | mainexpr (allinone | mainexpr)* mainexpr | allinone;
+main       : mainexpr+ | allinone+;
 
-allinone        : braceoc+ (variable | number | expr)*
-           | variable+ (number | expr)*
-           | number+ (variable | expr)*
-           | expr+ (variable | number)*
+allinone        : braceoc //+ (variable | number | expr)*
+           | variable //+ (number | expr)*
+           | number //+ (variable | expr)*
+           | expr //+ (variable | number)*
            | muldiv
            | signs
-           | colformat{0,1}
-           | rowdelimit{0,1}
+           | colformat
+           | rowdelimit
            ;
 
-braceoc    : BRACEOPEN (allinone)* BRACECLOSE ;
+braceoc    : BRACEOPEN (braceoc | muldiv | variable | number | signs)+ BRACECLOSE ;
 
 signs      : PLUS | MINUS | EQ ;
 
@@ -48,28 +48,21 @@ number     : NUMBER
            ;
 
 subset     : SUBSET (VARIABLE | NUMBER)
-           | SUBSET LEFTBRACE allinone RIGHTBRACE
+           | SUBSET LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)+ RIGHTBRACE
            ;
 
 superset   : SUPERSET (VARIABLE | NUMBER)
-           | SUPERSET LEFTBRACE allinone RIGHTBRACE
+           | SUPERSET LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)+ RIGHTBRACE
            ;
 
-mainexpr   : BACKSLASH mainwords LEFTBRACE subwords{0,1} RIGHTBRACE ;
+mainexpr   : BACKSLASH mainwords LEFTBRACE subwords RIGHTBRACE ;
 
-expr       : BACKSLASH keywords
-           | BACKSLASH keywords
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE
-           | BACKSLASH keywords subset
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE subset
-           | BACKSLASH keywords superset
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE superset
-           | BACKSLASH keywords subset superset
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE subset superset
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE LEFTBRACE allinone RIGHTBRACE
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE LEFTBRACE allinone RIGHTBRACE subset
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE LEFTBRACE allinone RIGHTBRACE superset
-           | BACKSLASH keywords LEFTBRACE allinone RIGHTBRACE LEFTBRACE allinone RIGHTBRACE subset superset
+expr       : BACKSLASH keywords (subset | superset)?
+           | BACKSLASH keywords subset? superset
+           | BACKSLASH keywords LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)* RIGHTBRACE (subset | superset)?
+           | BACKSLASH keywords LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)* RIGHTBRACE subset? superset
+           | BACKSLASH keywords LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)* RIGHTBRACE LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)* RIGHTBRACE (subset | superset)?
+           | BACKSLASH keywords LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)* RIGHTBRACE LEFTBRACE (braceoc | variable | number | expr | muldiv | signs)* RIGHTBRACE subset? superset
            ;
 
 mainwords  : MAINWORDS ;
@@ -99,6 +92,6 @@ MAINWORDS  : 'begin' | 'end' ;
 
 SUBWORDS   : 'math' | 'array' ;
 
-KEYWORDS   : 'mathbf' | 'sum' | 'frac' ;
+KEYWORDS   : 'mathbf' | 'mathit' | 'boldsymbol' | 'sum' | 'int' | 'frac' ;
 
 WS         : [ \t\r\n]+ -> skip ;

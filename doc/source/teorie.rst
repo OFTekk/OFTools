@@ -8,6 +8,7 @@ Obsah:
 
 	matice.rst
 	primka.rst
+	unicodetexsymboly.rst
 
 
 Index a tabulky
